@@ -1,0 +1,627 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大世界修仙</title>
+  <link rel="stylesheet" href="单机版/css/style.css?v=20260919">
+</head>
+<body>
+  <!-- 角色创建界面 -->
+  <div id="create-screen" class="create-screen">
+    <div class="create-panel">
+      <h1 class="game-title">大世界修仙</h1>
+      <p class="game-subtitle">一个活着的修仙世界</p>
+      <div class="create-form">
+        <div class="form-group">
+          <label>姓名</label>
+          <div class="name-input-row">
+            <input type="text" id="player-surname" placeholder="姓" style="flex:1;">
+            <input type="text" id="player-given-name" placeholder="名" style="flex:2;">
+            <button type="button" class="btn btn-small btn-random" onclick="randomName()" title="随机姓名">🎲</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>性别</label>
+          <div class="name-input-row">
+            <select id="player-gender" style="flex:1;">
+              <option value="random">随机</option>
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+            <button type="button" class="btn btn-small btn-random" onclick="randomGender()" title="随机性别">🎲</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>种族</label>
+          <div class="name-input-row">
+            <select id="player-race" style="flex:1;">
+              <option value="random">随机</option>
+              <option value="人族">人族</option>
+              <option value="妖族">妖族</option>
+              <option value="魔族">魔族</option>
+              <option value="灵体">灵体</option>
+            </select>
+            <button type="button" class="btn btn-small btn-random" onclick="randomRace()" title="随机种族">🎲</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>性格</label>
+          <div class="name-input-row">
+            <select id="player-personality" style="flex:1;">
+              <option value="random">随机</option>
+            </select>
+            <button type="button" class="btn btn-small btn-random" onclick="randomPersonality()" title="随机性格">🎲</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>出身地点</label>
+          <div class="name-input-row">
+            <select id="player-location" style="flex:1;"></select>
+            <button type="button" class="btn btn-small btn-random" onclick="randomLocation()" title="随机地点">🎲</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button class="btn btn-gold" onclick="createPlayer()" style="flex:2;margin-top:0;">踏入修仙界</button>
+          <button class="btn" onclick="showLoadGameFromStart()" style="flex:1;margin-top:0;">读取存档</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 游戏主界面 -->
+  <div id="game-screen" class="game-screen" style="display:none;">
+    <!-- 顶部UI -->
+    <div class="top-bar">
+      <div class="top-left">
+        <div class="time-vertical">
+          <span id="hud-time">1年1月上旬</span>
+          <span id="hud-weather">晴</span>
+        </div>
+        <div class="time-buttons">
+          <button class="btn btn-time" onclick="advanceMonth()">转月</button>
+          <button class="btn btn-time" onclick="advanceYear()">转年</button>
+        </div>
+      </div>
+      <div class="top-center">
+        <div class="player-info-mini">
+          <img id="top-avatar" src="">
+          <div>
+            <div class="player-name" id="top-name">无名修士</div>
+            <div class="player-realm" id="top-realm">炼气境</div>
+          </div>
+          <button class="btn btn-small" style="margin-left:8px;" onclick="showPlayerAttrPanel()">📊 属性</button>
+        </div>
+      </div>
+      <div class="top-right">
+        <div class="currency">
+          <span class="silver">银两 <b id="hud-silver">0</b></span>
+          <span class="spirit">灵石 <b id="hud-spirit">0</b></span>
+        </div>
+        <div class="top-buttons">
+          <button class="btn btn-small" onclick="saveGame()">存档</button>
+          <button class="btn btn-small" onclick="loadGame()">读档</button>
+          <button class="btn btn-small" onclick="showPortraitCustomizer()">🎨 立绘</button>
+          <button class="btn btn-small btn-danger" onclick="restartGame()">重新开局</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主内容区 - 各页面 -->
+    <div class="main-content">
+      <!-- 地图页面 -->
+      <div id="page-map" class="page active">
+        <div class="map-tabs">
+          <button class="map-tab active" onclick="switchMapTab('mortal')">凡人界</button>
+          <button class="map-tab" onclick="switchMapTab('cultivation')">修仙界</button>
+          <button class="map-tab" onclick="switchMapTab('special')">副本空间</button>
+        </div>
+        <div class="map-container">
+          <div class="map-bg" id="map-bg">
+            <div class="location-grid" id="location-grid"></div>
+          </div>
+        </div>
+        <div class="map-location-info" id="map-location-info">
+          <div class="current-location">
+            <span class="loc-icon">📍</span>
+            <span id="current-location-name">大夏皇都</span>
+          </div>
+          <div class="location-actions" id="location-actions"></div>
+        </div>
+      </div>
+
+      <!-- 角色页面 -->
+      <div id="page-character" class="page">
+        <div id="char-bg-layer" style="position:fixed;inset:0;z-index:0;background:url('images/char_bg/bg1.jpg') center/cover no-repeat;opacity:0.32;pointer-events:none;transition:background-image .5s;"></div>
+        <div class="character-page">
+          <div class="char-header-large">
+            <div style="text-align:center;">
+              <img id="char-portrait" class="portrait-xlarge" src="">
+              <br><button class="btn btn-small" style="margin-top:5px;" onclick="randomizePortrait('player')">🎲 随机立绘</button>
+              <br><button class="btn btn-small" style="margin-top:5px;" onclick="randomCharBg()">🎨 换背景</button>
+            </div>
+            <div class="char-info-large">
+              <div class="char-name-large" id="char-name">无名修士</div>
+              <div class="char-title-large" id="char-title"></div>
+              <div style="font-size:12px;color:#8b6914;">身份：<span id="char-identity"></span></div>
+              <div class="char-meta-large">
+                <span id="char-race"></span> · <span id="char-age"></span>岁 · <span id="char-spirit-root"></span> <span id="char-pregnancy" style="color:#cd5c5c;"></span>
+              </div>
+              <div class="char-tags-large" id="char-tags"></div>
+            </div>
+          </div>
+          <div class="char-stats-large">
+            <div class="stat-row-large">
+              <span>气血</span>
+              <div class="stat-bar-large"><div class="stat-fill hp" id="hp-bar"></div></div>
+              <span id="hp-text">0/0</span>
+            </div>
+            <div class="stat-row-large">
+              <span>灵力</span>
+              <div class="stat-bar-large"><div class="stat-fill mp" id="mp-bar"></div></div>
+              <span id="mp-text">0/0</span>
+            </div>
+            <div class="stat-row-large">
+              <span>修为</span>
+              <div class="stat-bar-large"><div class="stat-fill exp" id="exp-bar"></div></div>
+              <span id="exp-text">0/0</span>
+            </div>
+          </div>
+          <div class="char-attrs-large" id="char-attrs-container" style="grid-template-columns:repeat(3,1fr);">
+            <!-- 属性动态生成 -->
+          </div>
+          <div class="action-grid">
+            <button class="btn btn-action-large" onclick="doCultivate()">修炼</button>
+            <button class="btn btn-action-large" onclick="doExplore()">探索</button>
+            <button class="btn btn-action-large" onclick="doRest()">休息</button>
+            <button class="btn btn-action-large" onclick="doBreakthrough()">突破</button>
+            <button class="btn btn-action-large" onclick="openWorkMap()">💼 工作</button>
+            <button class="btn btn-action-large" onclick="showInventory()">背包</button>
+            <button class="btn btn-action-large" onclick="showCollection()">📖 图鉴</button>
+            <button class="btn btn-action-large" onclick="showLearning('alchemy')">学丹</button>
+            <button class="btn btn-action-large" onclick="showLearning('forge')">学器</button>
+            <button class="btn btn-action-large" onclick="showLearning('formation')">学阵</button>
+            <button class="btn btn-action-large" onclick="showLearning('technique')">功法</button>
+            <button class="btn btn-action-large" onclick="openPetMap()">🐾 灵宠</button>
+            <button class="btn btn-action-large" onclick="showMyChildren()">👨‍👩‍👧‍👦 子嗣</button>
+            <button class="btn btn-action-large" onclick="showTitles()">称号</button>
+            <button class="btn btn-action-large" onclick="showAchievements()">成就</button>
+            <button class="btn btn-action-large" onclick="showMasterDisciple()">师徒</button>
+            <button class="btn btn-action-large" onclick="showPlayerJournal()">记事板</button>
+            <button class="btn btn-action-large" onclick="showPlayerLetters()">书信</button>
+            <button class="btn btn-action-large" onclick="showStalls()">摊位</button>
+            <button class="btn btn-action-large" style="background:rgba(139,69,19,0.3);border-color:#8b4513;" onclick="showSuccessionModal()">👑 传代</button>
+          </div>
+          <div class="combat-stats-large" style="display:flex;gap:15px;">
+            <div style="flex:1;">
+              <div class="panel-title">战斗属性</div>
+              <div id="combat-stats-content"></div>
+            </div>
+            <div style="width:200px;">
+              <div class="panel-title">装备栏</div>
+              <div id="equipment-slots"></div>
+              <div style="margin-top:8px;"><button class="btn btn-small" onclick="showEquipmentPanel()">管理装备</button></div>
+            </div>
+          </div>
+          <div class="player-journal-section">
+            <div class="panel-title">我的记事</div>
+            <div class="player-journal-list" id="player-journal-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 工作与职业地图页面（角色页"工作"按钮跳转） -->
+      <div id="page-work" class="page">
+        <div style="position:fixed;inset:0;z-index:0;background:url('images/mapbg/work.jpg') center/cover no-repeat;opacity:0.35;pointer-events:none;"></div>
+        <div class="work-page" style="position:relative;z-index:1;">
+          <div class="page-header">
+            <button class="btn btn-back" onclick="switchPage('character')">‹ 返回</button>
+            <h2 class="page-title">💼 工作与职业</h2>
+            <button class="btn btn-small" onclick="renderWorkPage()">刷新</button>
+          </div>
+          <div id="work-map-content" style="max-width:1100px;margin:0 auto;padding:14px 16px;"></div>
+        </div>
+      </div>
+
+      <!-- 灵宠地图页面（角色页"灵宠"按钮跳转） -->
+      <div id="page-pet" class="page">
+        <div style="position:fixed;inset:0;z-index:0;background:url('images/mapbg/pet.jpg') center/cover no-repeat;opacity:0.35;pointer-events:none;"></div>
+        <div style="position:relative;z-index:1;padding:12px 16px;">
+          <div class="page-header">
+            <button class="btn btn-back" onclick="switchPage('character')">‹ 返回</button>
+            <h2 class="page-title">🐾 灵宠</h2>
+            <button class="btn btn-small" onclick="renderPetMap()">刷新</button>
+          </div>
+          <div id="pet-map-content"></div>
+        </div>
+      </div>
+
+      <!-- 世界记事页面 -->
+      <div id="page-journal" class="page">
+        <div class="journal-header">
+          <button class="btn btn-back" onclick="switchPage('map')">‹ 返回</button>
+          <h2 class="page-title">世界记事</h2>
+          <button class="btn btn-small" onclick="switchPage('people')">世界人物</button>
+        </div>
+        <div class="journal-sub-tabs">
+          <button class="journal-sub-tab active" id="tab-world-journal" onclick="switchJournalMode('world')">世界记事</button>
+          <button class="journal-sub-tab" id="tab-person-journal" onclick="switchJournalMode('person')">人物记事</button>
+        </div>
+        <div id="world-journal-section">
+          <div class="journal-filters" id="journal-filters"></div>
+          <div class="journal-list" id="journal-list"></div>
+        </div>
+        <div id="person-journal-section" style="display:none;">
+          <div class="person-journal-selector" id="person-journal-selector"></div>
+          <div class="journal-list" id="person-journal-list"></div>
+        </div>
+      </div>
+
+      <!-- 世界人物页面 -->
+      <div id="page-people" class="page">
+        <div class="journal-header">
+          <button class="btn btn-back" onclick="switchPage('map')">‹ 返回地图</button>
+          <h2 class="page-title">已认识的人物</h2>
+        </div>
+        <div class="people-filters" id="people-filters"></div>
+        <div id="people-md-panel"></div>
+        <div class="people-grid" id="people-grid"></div>
+      </div>
+
+      <!-- 当地人物页面 -->
+      <div id="page-local" class="page">
+        <div class="journal-header">
+          <button class="btn btn-back" onclick="switchPage('map')">‹ 返回</button>
+          <h2 class="page-title">当地人物</h2>
+        </div>
+        <div class="people-grid" id="local-people-grid"></div>
+      </div>
+
+      <!-- 宅子页面 -->
+      <div id="page-mansion" class="page">
+        <div class="mansion-bg" id="mansion-bg"></div>
+        <div class="mansion-overlay">
+          <div class="journal-header" style="background:transparent;border:none;">
+            <button class="btn btn-back" onclick="switchPage('map')">‹ 返回</button>
+            <h2 class="page-title" id="mansion-title">我的宅子</h2>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-small" onclick="showInvitePanel()">📩 邀请</button>
+              <button class="btn btn-small" onclick="upgradeMansion()">升级宅子</button>
+            </div>
+          </div>
+          <div class="mansion-info" id="mansion-info"></div>
+          <div class="mansion-family" id="mansion-family"></div>
+          <div class="mansion-areas" id="mansion-areas"></div>
+        </div>
+      </div>
+
+      <!-- 副本地图页面 -->
+      <div id="page-dungeon" class="page">
+        <div class="dungeon-map-bg" id="dungeon-map-bg"></div>
+        <div class="dungeon-map-overlay">
+          <div class="journal-header" style="background:transparent;border:none;">
+            <button class="btn btn-back" onclick="exitDungeon()">‹ 离开秘境</button>
+            <h2 class="page-title" id="dungeon-map-title">秘境</h2>
+            <span id="dungeon-floor-info" style="color:#f5e6d3;font-size:14px;">第1层</span>
+          </div>
+          <div class="dungeon-map-content">
+            <div class="dungeon-stats">
+              <div class="dungeon-stat"><span>气血</span><b id="dungeon-player-hp">0/0</b></div>
+              <div class="dungeon-stat"><span>灵力</span><b id="dungeon-player-mp">0/0</b></div>
+              <div class="dungeon-stat"><span>修为</span><b id="dungeon-player-exp">0</b></div>
+            </div>
+            <div class="dungeon-actions" id="dungeon-actions">
+              <button class="btn btn-dungeon-action" onclick="dungeonGather()">🌿 采集</button>
+              <button class="btn btn-dungeon-action" onclick="dungeonExplore()">⚔️ 探索</button>
+              <button class="btn btn-dungeon-action" onclick="exitDungeon()">🚪 离开</button>
+            </div>
+            <div class="dungeon-event-log" id="dungeon-event-log"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 地点详情页面 -->
+      <div id="page-location" class="page">
+        <div class="location-detail-bg" id="location-detail-bg"></div>
+        <div class="location-detail-overlay">
+          <div class="journal-header" style="background:transparent;border:none;">
+            <button class="btn btn-back" onclick="switchPage('map')">‹ 返回地图</button>
+            <h2 class="page-title" id="location-detail-title">地点</h2>
+            <button class="btn btn-small" onclick="switchPage('local')">当地人物</button>
+          </div>
+          <div class="location-detail-desc" id="location-detail-desc"></div>
+          <div class="location-functions" id="location-functions"></div>
+          <div class="location-local-people" id="location-local-people"></div>
+        </div>
+      </div>
+
+      <!-- 采集页面 -->
+      <div id="page-gathering" class="page">
+        <div class="location-detail-bg" id="gathering-bg" style="background-image:url('images/ditu/落日森林.jpg');background-size:cover;background-position:center;"></div>
+        <div class="location-detail-overlay">
+          <div class="journal-header" style="background:transparent;border:none;">
+            <button class="btn btn-back" onclick="exitGathering()">‹ 返回</button>
+            <h2 class="page-title">落日森林 · 采集区</h2>
+          </div>
+          <div style="background:rgba(0,0,0,0.6);padding:15px;border-radius:8px;margin-bottom:15px;">
+            <p style="color:#f5e6c8;margin:0;">广袤的落日森林，灵气充沛，生长着各种珍稀草药。在这里采集有概率遇到妖兽。</p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+            <div style="background:rgba(245,230,200,0.9);padding:10px;border-radius:5px;text-align:center;">
+              <div style="color:#5c3a1e;font-weight:bold;">聚灵草</div>
+              <div style="font-size:12px;color:#8b6914;">炼丹材料</div>
+            </div>
+            <div style="background:rgba(245,230,200,0.9);padding:10px;border-radius:5px;text-align:center;">
+              <div style="color:#5c3a1e;font-weight:bold;">灵草</div>
+              <div style="font-size:12px;color:#8b6914;">基础炼丹材料</div>
+            </div>
+            <div style="background:rgba(245,230,200,0.9);padding:10px;border-radius:5px;text-align:center;">
+              <div style="color:#5c3a1e;font-weight:bold;">人参</div>
+              <div style="font-size:12px;color:#8b6914;">大补元气</div>
+            </div>
+            <div style="background:rgba(245,230,200,0.9);padding:10px;border-radius:5px;text-align:center;">
+              <div style="color:#5c3a1e;font-weight:bold;">百年茯苓</div>
+              <div style="font-size:12px;color:#8b6914;">筑基丹材料</div>
+            </div>
+            <div style="background:rgba(245,230,200,0.9);padding:10px;border-radius:5px;text-align:center;">
+              <div style="color:#5c3a1e;font-weight:bold;">鹿茸</div>
+              <div style="font-size:12px;color:#8b6914;">补肾壮阳</div>
+            </div>
+            <div style="background:rgba(245,230,200,0.9);padding:10px;border-radius:5px;text-align:center;">
+              <div style="color:#5c3a1e;font-weight:bold;">妖兽</div>
+              <div style="font-size:12px;color:#8b0000;">30%概率遭遇</div>
+            </div>
+          </div>
+          <div id="gather-remain" style="text-align:center;color:#c9a961;font-size:14px;margin:8px 0;"></div>
+          <div style="text-align:center;margin:20px 0;">
+            <button class="btn btn-primary" style="padding:15px 40px;font-size:18px;" onclick="doGathering()">开始采集</button>
+          </div>
+          <div id="gathering-result" style="margin-top:20px;"></div>
+        </div>
+      </div>
+
+      <!-- 捕鱼页面 -->
+      <div id="page-fishing" class="page">
+        <div class="location-detail-bg" style="background:linear-gradient(180deg,#1a3a5c 0%,#0d1f33 50%,#0a1628 100%);"></div>
+        <div class="location-detail-overlay">
+          <div class="journal-header" style="background:transparent;border:none;">
+            <button class="btn btn-back" onclick="exitFishingPage()">‹ 返回</button>
+            <h2 class="page-title" id="fishing-title">东海渔村 · 码头</h2>
+          </div>
+
+          <!-- 出海区选择 -->
+          <div id="fishing-zone-select" style="display:block;">
+            <div style="background:rgba(0,0,0,0.6);padding:15px;border-radius:8px;margin-bottom:15px;">
+              <p style="color:#f5e6c8;margin:0;">选择出海区，每个区域可捕鱼10次。品级越高的区域，费用越高，捕获高品级鱼类的概率越大。</p>
+            </div>
+            <div id="fishing-zones-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;"></div>
+          </div>
+
+          <!-- 捕鱼界面 -->
+          <div id="fishing-game" style="display:none;">
+            <div style="background:rgba(0,0,0,0.6);padding:15px;border-radius:8px;margin-bottom:15px;text-align:center;">
+              <p style="color:#f5e6c8;margin:0 0 10px 0;" id="fishing-zone-name">近海浅滩</p>
+              <p style="color:#8b6914;margin:0;font-size:14px;">剩余捕鱼次数：<span id="fishing-catches-left">10</span></p>
+            </div>
+
+            <!-- 鱼的显示区域 -->
+            <div id="fish-display" style="display:none;text-align:center;margin-bottom:20px;">
+              <div id="fish-portrait" style="width:150px;height:150px;margin:0 auto 10px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                <span style="color:#f5e6c8;font-size:48px;">🐟</span>
+              </div>
+              <p id="fish-name" style="color:#f5e6c8;font-size:18px;font-weight:bold;margin:0 0 5px 0;"></p>
+              <p id="fish-tier" style="color:#8b6914;font-size:14px;margin:0;"></p>
+            </div>
+
+            <!-- 移动区（捕鱼小游戏） -->
+            <div id="fishing-game-area" style="display:none;margin-bottom:20px;">
+              <div style="background:rgba(0,0,0,0.4);padding:20px;border-radius:8px;">
+                <p style="color:#f5e6c8;text-align:center;margin-bottom:15px;">当移动的色块进入绿色区域时，点击"捕捉"按钮！</p>
+                <div id="fishing-track" style="position:relative;width:100%;height:40px;background:#333;border-radius:20px;overflow:hidden;margin-bottom:15px;">
+                  <div id="fishing-target" style="position:absolute;top:0;bottom:0;width:60px;background:#228b22;opacity:0.6;"></div>
+                  <div id="fishing-cursor" style="position:absolute;top:5px;bottom:5px;width:30px;background:#ffd700;border-radius:15px;left:0;"></div>
+                </div>
+                <div style="text-align:center;">
+                  <button class="btn btn-primary" id="fish-catch-btn" onclick="catchFishAction()" style="padding:12px 40px;font-size:16px;">捕捉</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 捕鱼按钮 -->
+            <div id="fishing-start-area" style="text-align:center;margin:20px 0;">
+              <button class="btn btn-primary" id="start-fish-btn" onclick="startFishing()" style="padding:15px 40px;font-size:18px;">🎣 钓鱼</button>
+              <button class="btn" onclick="exitFishingZone()" style="padding:15px 30px;font-size:16px;margin-left:10px;">🚪 离开</button>
+            </div>
+
+            <!-- 捕鱼结果 -->
+            <div id="fishing-result" style="margin-top:20px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 风花雪月地图（温柔乡） -->
+      <div id="page-windflower" class="page">
+        <div style="position:relative;min-height:calc(100vh - 60px);background:url('images/ditu/胭脂阁.jpg') center/cover no-repeat;">
+          <div style="position:absolute;top:10px;left:10px;z-index:2;">
+            <button class="btn" onclick="switchPage('map')">‹ 返回地图</button>
+          </div>
+          <div style="position:absolute;top:10px;right:10px;z-index:2;background:rgba(0,0,0,0.45);padding:6px 12px;border-radius:6px;color:#f5e6c8;font-size:13px;">
+            温柔乡 · 胭脂阁
+          </div>
+          <div style="position:relative;z-index:1;padding:48px 12px 12px;">
+            <div id="windflower-map-content" style="background:rgba(10,5,5,0.55);border:1px solid rgba(201,169,97,0.35);border-radius:10px;padding:12px;backdrop-filter:blur(3px);">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+      <button class="nav-btn active" onclick="switchPage('map')" data-page="map">
+        <span class="nav-icon">🗺️</span>
+        <span class="nav-text">地图</span>
+      </button>
+      <button class="nav-btn" onclick="switchPage('character')" data-page="character">
+        <span class="nav-icon">👤</span>
+        <span class="nav-text">角色</span>
+      </button>
+      <button class="nav-btn" onclick="switchPage('mansion')" data-page="mansion">
+        <span class="nav-icon">🏯</span>
+        <span class="nav-text">宅子</span>
+      </button>
+      <button class="nav-btn" onclick="switchPage('people')" data-page="people">
+        <span class="nav-icon">👥</span>
+        <span class="nav-text">人物</span>
+      </button>
+      <button class="nav-btn" onclick="switchPage('journal')" data-page="journal">
+        <span class="nav-icon">📜</span>
+        <span class="nav-text">记事</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 通用弹窗（古风宫廷样式） -->
+  <div id="generic-modal" class="modal ancient-modal">
+    <div class="modal-content ancient-modal-content">
+      <div class="ancient-modal-header">
+        <h2 id="ancient-modal-title">标题</h2>
+        <button class="btn-close" onclick="closeModal('generic-modal')">×</button>
+      </div>
+      <div id="ancient-modal-body" class="ancient-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 剧情弹窗（左立绘右对话） -->
+  <div id="story-modal" class="modal ancient-modal">
+    <div class="modal-content story-ancient-content">
+      <div class="ancient-modal-header">
+        <h2 id="story-title">剧情</h2>
+        <button class="btn-close" onclick="closeModal('story-modal')">×</button>
+      </div>
+      <div class="story-ancient-body">
+        <div class="story-portrait-ancient">
+          <img id="story-portrait-img" src="">
+          <div id="story-portrait-name" class="story-portrait-name-ancient"></div>
+        </div>
+        <div class="story-dialog-ancient">
+          <div id="story-text" class="story-text-ancient"></div>
+          <div id="story-effects" class="story-effects-ancient"></div>
+        </div>
+      </div>
+      <div class="story-actions-ancient" id="story-actions"></div>
+    </div>
+  </div>
+
+  <!-- NPC详情弹窗 -->
+  <div id="npc-detail-modal" class="modal ancient-modal">
+    <div class="modal-content ancient-modal-content" style="min-width:750px;max-height:85vh;overflow-y:auto;">
+      <div class="ancient-modal-header">
+        <h2 id="npc-detail-name">人物详情</h2>
+        <button class="btn-close" onclick="closeModal('npc-detail-modal')">×</button>
+      </div>
+      <div id="npc-detail-content" class="ancient-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 标签详情弹窗 -->
+  <div id="tag-detail-modal" class="modal ancient-modal">
+    <div class="modal-content ancient-modal-content" style="min-width:400px;">
+      <div class="ancient-modal-header">
+        <h2 id="tag-detail-title">标签详情</h2>
+        <button class="btn-close" onclick="closeModal('tag-detail-modal')">×</button>
+      </div>
+      <div id="tag-detail-content" class="ancient-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 立绘定制弹窗 -->
+  <div id="portrait-customizer-modal" class="modal ancient-modal">
+    <div class="modal-content ancient-modal-content" style="min-width:600px;max-height:85vh;">
+      <div class="ancient-modal-header">
+        <h2>🎨 立绘定制</h2>
+        <button class="btn-close" onclick="closeModal('portrait-customizer-modal')">×</button>
+      </div>
+      <div id="portrait-customizer-content" class="ancient-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 战斗面板 -->
+  <div id="combat-modal" class="modal ancient-modal">
+    <div class="modal-content ancient-modal-content" style="min-width:800px;max-width:90vw;max-height:90vh;">
+      <div class="ancient-modal-header">
+        <h2>⚔ 战斗</h2>
+      </div>
+      <div class="ancient-modal-body">
+        <div class="combat-container">
+          <!-- 玩家侧 -->
+          <div class="combat-side">
+            <div class="combat-portrait" id="combat-player-portrait"></div>
+            <div class="combat-name" id="combat-player-name">玩家</div>
+            <div class="combat-realm" id="combat-player-realm" style="font-size:12px;color:#8b6914;margin-bottom:5px;">炼气一层</div>
+            <div class="combat-stats">
+              <div class="combat-hp-bar"><div class="combat-hp-fill" id="combat-player-hp-fill"></div><span id="combat-player-hp-text">气血 0/0</span></div>
+              <div class="combat-mp-bar"><div class="combat-mp-fill" id="combat-player-mp-fill"></div><span id="combat-player-mp-text">灵力 0/0</span></div>
+              <div class="combat-exp-bar" style="height:16px;background:#2a1a0a;border-radius:4px;margin-top:4px;position:relative;overflow:hidden;">
+                <div class="combat-exp-fill" id="combat-player-exp-fill" style="height:100%;background:linear-gradient(90deg,#4a90d9,#6ab0ff);transition:width 0.3s;"></div>
+                <span id="combat-player-exp-text" style="position:absolute;top:0;left:0;right:0;text-align:center;font-size:10px;color:#fff;line-height:16px;">修为 0</span>
+              </div>
+            </div>
+            <div class="combat-equipment" id="combat-player-equipment"></div>
+            <div class="combat-buttons">
+              <button class="btn btn-small" onclick="showCombatEquipment('player')">装备</button>
+              <button class="btn btn-small" onclick="showCombatPills('player')">丹药</button>
+              <button class="btn btn-small" onclick="showCombatTalismans('player')">符箓</button>
+            </div>
+          </div>
+
+          <!-- 战斗描述 -->
+          <div class="combat-center">
+            <div class="combat-log" id="combat-log"></div>
+            <div class="combat-actions">
+              <button class="btn btn-combat" onclick="doCombatAction('attack')">⚔ 攻击</button>
+              <button class="btn btn-combat" onclick="doCombatAction('pill')">💊 丹药</button>
+              <button class="btn btn-combat" onclick="doCombatAction('talisman')">📜 符箓</button>
+              <button class="btn btn-combat" onclick="doCombatAction('flee')">🏃 逃跑</button>
+            </div>
+          </div>
+
+          <!-- 敌人侧 -->
+          <div class="combat-side">
+            <div class="combat-portrait" id="combat-enemy-portrait"></div>
+            <div class="combat-name" id="combat-enemy-name">敌人</div>
+            <div class="combat-realm" id="combat-enemy-realm" style="font-size:12px;color:#8b6914;margin-bottom:5px;">炼气一层</div>
+            <div class="combat-stats">
+              <div class="combat-hp-bar"><div class="combat-hp-fill" id="combat-enemy-hp-fill"></div><span id="combat-enemy-hp-text">气血 0/0</span></div>
+              <div class="combat-mp-bar"><div class="combat-mp-fill" id="combat-enemy-mp-fill"></div><span id="combat-enemy-mp-text">灵力 0/0</span></div>
+              <div class="combat-exp-bar" style="height:16px;background:#2a1a0a;border-radius:4px;margin-top:4px;position:relative;overflow:hidden;">
+                <div class="combat-exp-fill" id="combat-enemy-exp-fill" style="height:100%;background:linear-gradient(90deg,#d94a4a,#ff6a6a);transition:width 0.3s;"></div>
+                <span id="combat-enemy-exp-text" style="position:absolute;top:0;left:0;right:0;text-align:center;font-size:10px;color:#fff;line-height:16px;">修为 0</span>
+              </div>
+            </div>
+            <div class="combat-equipment" id="combat-enemy-equipment"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 战斗结束面板 -->
+  <div id="combat-end-modal" class="modal ancient-modal">
+    <div class="modal-content ancient-modal-content" style="min-width:400px;">
+      <div class="ancient-modal-header">
+        <h2 id="combat-end-title">战斗结束</h2>
+      </div>
+      <div class="ancient-modal-body" id="combat-end-content"></div>
+    </div>
+  </div>
+
+  <script src="单机版/js/game.bundle.js"></script>
+  <script src="单机版/js/portraits.js"></script>
+  <script src="单机版/js/client-server.js"></script>
+  <script src="单机版/js/portrait-manager.js"></script>
+  <script src="单机版/js/app.js"></script>
+</body>
+</html>
+
+
